@@ -143,9 +143,9 @@ def addpost():
 def editpost(p_fn=''):
     postindex = indexposts()
     pps = [wt.get_form('fn'), 
-              wt.get_form('title'),
-              wt.get_form('date'),
-              wt.get_form('content')]
+           wt.get_form('title'),
+           wt.get_form('date'),
+           wt.get_form('content')]
     print(wt.new_form(sett['url'] + "#edit", 'post'))
     print(wt.put_form('hidden', 'm', 'p_edit'))
     if pps[0]:
@@ -153,29 +153,29 @@ def editpost(p_fn=''):
             print("Previewing")
         print(wt.get_form("fn"))
         fn = wt.get_form("fn")
-        try:
-            print("<p>")
-            with open(fn, 'r') as entry:
-                entry = entry.read().splitlines()
-            ds = [pps[0], entry[1], entry[0][6:],
-                  '\n'.join(entry[2:])]
-            for n, i in enumerate(pps):
-                if not pps[n]:
-                    pps[n] = ds[n]
-            print("Title:", wt.put_form('text', 'title', pps[1], 1))
-            print(wt.put_form('submit', 'prev', 'Preview'))
-            print("<br>Date:", wt.put_form('text', 'date', pps[2], 1))
-            print(wt.put_form('submit', 'sub', 'Submit'))
-            print("<br>fn:", wt.put_form('text', 'fn',
-                                         pps[0]).replace(">", " readonly>"))
-            print("<p>", markdown(pps[3]), "<p>")
-            print("<a name='edit'>")
-            print("<small><code>preview<hr>edit</code></small><p>")
-            print("<p>", wt.put_form("textarea", "content", pps[3], 1))
-                                    
-        except:
-            pass
-        print("<p>", fn)
+        print("<p>")
+        with open(fn, 'r') as entry:
+            entry = entry.read().splitlines()
+        ds = [pps[0], entry[1], entry[0][6:],
+              '\n'.join(entry[2:])]
+        for n, i in enumerate(pps):
+            if not pps[n]:
+                pps[n] = ds[n]
+        pps[2], pps[1] = pps[1], pps[2]
+        if wt.get_form('sub'):
+            with open(pps[0], 'w') as pos:
+                pps[1] = sett['dpre'] + pps[1]
+                blog = '\n'.join(pps[1:])
+                pos.write(blog)
+            print("<p>Blog entry<i>", pps[2], "</i>updated successfully.")
+            return None
+        pps[0], pps[2] = pps[2], pps[0]
+        pps.append('')
+        pps.append(markdown(pps[3]))
+        with open("post.html", "r") as pos:
+            pos = pos.read().replace("fn'", "fn' readonly ")
+        print(pos.format(*pps))
+
     postnames = [i[len(sett['dir']):-len(sett['ext'])] for i in postindex]
     if not wt.get_form('fn'):
         print(wt.dropdown('fn', postindex, postnames))
