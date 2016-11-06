@@ -1,0 +1,54 @@
+* sett
+  Settings
+** pw
+   password
+** url
+   Admin panel's web address 
+   relative to blog's address
+** dir
+   Location of pages directory
+   relative to the admin panel's location
+** ext
+   Extension for blog entries
+
+* panel
+** posting modes
+*** p_add
+*** p_edit
+*** p_del
+*** p_move
+** category modes
+*** c_add
+*** c_del
+*** c_merge
+** meta modes
+*** login
+*** logout
+
+* Listing functions
+** indexposts
+  Returns list of blog entry paths
+** subdir_list
+  Returns an HTML dropdown menu of all subdirectories
+** catlist
+  List all categories.
+* Login functions
+** logged_in(password)
+  Returns true or false depending on password
+
+** logout
+* Post functions
+** getpost
+  First, gather a list of posts (indexposts).
+  Make a copy of any blogpost data in the CGI form.
+  If the blogpost also exists on the disk, use the 
+  disks's version to complete any incompleted information.
+** addpost
+  If the blogpost with the requested filename doesn't 
+  exist on the disk, get the information necessary to
+  create one and see if the user wants to write it.
+** editpost
+  Compares the disk version with the local version, and lets
+  the user overwrite the disk copy with the local copy.
+* categoryadd
+  Try to make a category if it doesn't exist.
