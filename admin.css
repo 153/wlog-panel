@@ -3,3 +3,16 @@ textarea {min-width: 400px;
 	  min-height: 400px;
 	  max-height: 900px;
 	 }
+
+table {
+    border-collapse: collapse;
+    border: 2px solid #000;
+}
+
+th, td {
+    border: 2px solid #000;
+    padding: 4px
+}
+
+td {background-color: #dbdbdb;}
+th {background-color: #444; color: #e4e4e4}

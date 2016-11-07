@@ -7,7 +7,24 @@ import mistune
 markdown = mistune.Markdown()
 cgitb.enable()
 
-sett = {'pw': "dank", 
+
+def sett():
+    settt = {}
+    with open("sett.txt", 'r') as sett:
+        sett = sett.read().splitlines()
+    for i in sett:
+        i = i.split(" ")
+        if len(i) < 2:
+            continue
+        if len(i) > 2:
+            i[1] = " ".join(i[1:])
+        settt[i[0]] = i[1]
+    print(settt)
+    return settt
+
+sett = sett()
+        
+asett = {'pw': "dank", 
         'url':"./admin.py3?", 
         'dir':"../pages/",
         'ext':".md",
@@ -16,7 +33,8 @@ sett = {'pw': "dank",
 def panel():
     modes = {'p_add':'addpost()', 'p_edit':'editpost()', 'p_del':'delpost()',
              'p_move':'movepost()', 'c_add':'categoryadd()',
-             'c_del':'categorydel()', 'logout':'logout()'}
+             'c_del':'categorydel()', 'settings':'settings()',
+             'logout':'logout()'}
     print("<div>")
     print(sorted([modes[i] for i in modes.keys()]))
     print("<p>")
@@ -44,6 +62,8 @@ def indexposts():
 def logged_in(password=''):
     if not password:
         if not wt.get_form("pw"):
+            print(sett['pw'])
+            print(sett)
             print(wt.new_form(sett['url'], 'post'))
             print(wt.put_form('password', 'pw', ''))
             print(wt.put_form('submit', '', "Login"), "</form>")
@@ -79,8 +99,8 @@ def getpost(p_fn=''):
     else:
         date = wt.get_form('date')
     pps = [wt.get_form('fn')[:13],
-           wt.get_form('title')[:30],
            date,
+           wt.get_form('title')[:30],
            wt.get_form('content')[:100000]]
     pps[0] = re.sub(r'[^\w\s]', '', pps[0])
     pps[0] = re.sub(r'\s+', '_', pps[0])
@@ -88,8 +108,8 @@ def getpost(p_fn=''):
         with open(p_fn, 'r') as entry:
             entry = entry.read().splitlines()
         ds = [p_fn,
-              entry[1],
               entry[0][6:], # strip `date: '
+              entry[1],
               '\n'.join(entry[2:])]
         for n, i in enumerate(pps):
             if not pps[n]:
@@ -117,13 +137,12 @@ def addpost():
     if wt.get_form('fn'):
         mp = getpost(wt.get_form('fn'))
         mp[2].replace("&gt;", ">").replace("&lt;", "<")
-        mp[0], mp[1] = mp[1], mp[0]
-        mp[1], mp[2] = mp[2], mp[1]
+        mp[0], mp[2] = mp[2], mp[0]
         mp.append(subdir_list())
         mp.append(markdown(mp[3]))
         subd = ''
         if wt.get_form('subd'):
-            sfubd = wt.get_form('subd') + "/"
+            subd = wt.get_form('subd') + "/"
         newfn = sett['dir'] + subd + mp[2] + sett['ext']
         if wt.get_form('sub'):
             mp[1] = sett['dpre'] + mp[1]
@@ -140,6 +159,8 @@ def addpost():
         print(post.format('', wt.fancy_time('', 'human'), '',
                           '', subdir_list(), ''))
     print("</form>")
+
+# need to refactor
 
 def editpost(p_fn=''):
     postindex = indexposts()
@@ -198,7 +219,7 @@ def delpost():
                 print("<br>Deleted", i)
     for n, i in enumerate(p_ind):
           print("<br>", wt.put_form("checkbox", 'fil', fn_ind[n]), i)
-    print("<p>", wt.put_form("submit", "sub", "Submit"), "</form>")
+    print("<p>", wt.put_form("submit", "sub", "Delete"), "</form>")
 #        print(filz)
         
 def catlist():
@@ -242,6 +263,34 @@ def categoryadd():
           wt.put_form('text', 'dir'),
           wt.put_form('submit', 'add', 'Add'),
           "</form>")
+
+def settings():
+    if wt.get_form('sub'):
+        change = 0
+        for i in sett.keys():
+            if wt.get_form(i) and wt.get_form(i) != sett[i].strip():
+                change += 1
+                sett[i] = wt.get_form(i)
+        if change > 0:
+            with open('sett.txt', 'w') as sett_txt:
+                buff = []
+                for i in sett.keys():
+                    buff.append(str(i + " " + sett[i]))
+                buff = '\n'.join(buff)
+                sett_txt.write(buff)
+            print("<p><b>Settings updated.</b>")
+                
+    print(wt.new_form(sett['url'], "post"),
+          wt.put_form("hidden", "m", "settings"))
+    print("<table><tr><th colspan='3'>Admin settings")
+    print("<hr><i>Note: modify sett.txt if this gets messed up.</i>")
+    print("<tr><th>Setting<th>Current<th>Modify?")
+    for i in sorted(sett.keys()):
+        print("<tr><th>", i, "<td>", sett[i],
+              "<td>", wt.put_form("text", i, sett[i]))
+    print("<tr><th colspan='3'><br>",
+          wt.put_form("submit", "sub", "Change"))
+    print("</table></form>")
     
 def main():
     cookies = wt.get_cookie()

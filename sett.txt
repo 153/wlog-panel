@@ -1,0 +1,5 @@
+url ./admin.py3?
+pw test
+dpre date: 
+ext .md
+dir ../pages/
