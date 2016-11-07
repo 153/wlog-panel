@@ -19,17 +19,10 @@ def sett():
         if len(i) > 2:
             i[1] = " ".join(i[1:])
         settt[i[0]] = i[1]
-    print(settt)
     return settt
 
 sett = sett()
         
-asett = {'pw': "dank", 
-        'url':"./admin.py3?", 
-        'dir':"../pages/",
-        'ext':".md",
-        'dpre': "date: "}
-
 def panel():
     modes = {'p_add':'addpost()', 'p_edit':'editpost()', 'p_del':'delpost()',
              'p_move':'movepost()', 'c_add':'categoryadd()',
@@ -62,11 +55,10 @@ def indexposts():
 def logged_in(password=''):
     if not password:
         if not wt.get_form("pw"):
-            print(sett['pw'])
-            print(sett)
-            print(wt.new_form(sett['url'], 'post'))
-            print(wt.put_form('password', 'pw', ''))
-            print(wt.put_form('submit', '', "Login"), "</form>")
+            print(wt.new_form(sett['url'], 'post'),
+                  wt.put_form('password', 'pw', ''),
+                  wt.put_form('submit', '', "Login"),
+                  "</form>")
             return
         password = wt.get_form("pw")
     if password != sett['pw']:
@@ -81,10 +73,8 @@ def logout():
     print(wt.put_cookie('pw', ''))
 
 def subdir_list():
-    form = []
     subdirs = catlist()
-    menu = wt.dropdown('subd', subdirs)
-    menu = menu.splitlines()
+    menu = wt.dropdown('subd', subdirs).splitlines()
     menu.insert(1, "<option value=''> -----</option>")
     menu = '\n'.join(menu)
     if wt.get_form('subd') in subdirs:
@@ -97,7 +87,7 @@ def getpost(p_fn=''):
     if not wt.get_form('date') or wt.get_form('date') == 'now':
         date = wt.fancy_time('', 'human')
     else:
-        date = wt.get_form('date')
+        date = wt.get_form('date')[:30]
     pps = [wt.get_form('fn')[:13],
            date,
            wt.get_form('title')[:30],
@@ -217,10 +207,10 @@ def delpost():
             else:
                 os.remove(i)
                 print("<br>Deleted", i)
+                
     for n, i in enumerate(p_ind):
           print("<br>", wt.put_form("checkbox", 'fil', fn_ind[n]), i)
     print("<p>", wt.put_form("submit", "sub", "Delete"), "</form>")
-#        print(filz)
         
 def catlist():
     dirs = []
@@ -271,6 +261,7 @@ def settings():
             if wt.get_form(i) and wt.get_form(i) != sett[i].strip():
                 change += 1
                 sett[i] = wt.get_form(i)
+                
         if change > 0:
             with open('sett.txt', 'w') as sett_txt:
                 buff = []
@@ -281,23 +272,25 @@ def settings():
             print("<p><b>Settings updated.</b>")
                 
     print(wt.new_form(sett['url'], "post"),
-          wt.put_form("hidden", "m", "settings"))
-    print("<table><tr><th colspan='3'>Admin settings")
-    print("<hr><i>Note: modify sett.txt if this gets messed up.</i>")
-    print("<tr><th>Setting<th>Current<th>Modify?")
+          wt.put_form("hidden", "m", "settings"),
+          "<table><tr><th colspan='3'>Admin settings",
+          "<hr><i>Note: modify sett.txt if this gets messed up.</i>",
+          "<tr><th>Setting<th>Current<th>Modify?")
+    
     for i in sorted(sett.keys()):
         print("<tr><th>", i, "<td>", sett[i],
               "<td>", wt.put_form("text", i, sett[i]))
+        
     print("<tr><th colspan='3'><br>",
-          wt.put_form("submit", "sub", "Change"))
-    print("</table></form>")
+          wt.put_form("submit", "sub", "Change"),
+          "</table></form>")
     
 def main():
     cookies = wt.get_cookie()
     pw = ''
-    print(wt.head("admin panel"))
-    print("<link rel='stylesheet' type='text/css' href='admin.css'>")
-    print("<body>")
+    print(wt.head("admin panel"),
+          "<link rel='stylesheet' type='text/css' href='admin.css'>",
+          "<body>")
     if 'pw' in cookies.keys():
         pw = cookies['pw']
     if pw == sett['pw']:
