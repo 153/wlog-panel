@@ -116,13 +116,14 @@ def addpost():
         post = post.read()
     if wt.get_form('fn'):
         mp = getpost(wt.get_form('fn'))
+        mp[2].replace("&gt;", ">").replace("&lt;", "<")
         mp[0], mp[1] = mp[1], mp[0]
         mp[1], mp[2] = mp[2], mp[1]
         mp.append(subdir_list())
         mp.append(markdown(mp[3]))
         subd = ''
         if wt.get_form('subd'):
-            subd = wt.get_form('subd') + "/"
+            sfubd = wt.get_form('subd') + "/"
         newfn = sett['dir'] + subd + mp[2] + sett['ext']
         if wt.get_form('sub'):
             mp[1] = sett['dpre'] + mp[1]
@@ -145,7 +146,7 @@ def editpost(p_fn=''):
     pps = [wt.get_form('fn'), 
            wt.get_form('title'),
            wt.get_form('date'),
-           wt.get_form('content')]
+           wt.get_form('content').replace("&gt;", ">").replace("&lt;", "<")]
     print(wt.new_form(sett['url'] + "#edit", 'post'))
     print(wt.put_form('hidden', 'm', 'p_edit'))
     if pps[0]:
@@ -182,6 +183,24 @@ def editpost(p_fn=''):
         print(wt.put_form('submit', '', 'go'))
     print("</form>")
 
+def delpost():
+    fn_ind = indexposts()
+    p_ind = [i[len(sett['dir']):-len(sett['ext'])] for i in fn_ind]
+    print(wt.new_form(sett['url'], 'post'),
+          wt.put_form('hidden', 'm', 'p_del'))
+    if wt.get_form('fil'):
+        filz = wt.get_form('fil').split('\n')
+        for n, i in enumerate(filz):
+            if i[len(sett['dir']):-len(sett['ext'])] not in p_ind:
+                continue
+            else:
+                os.remove(i)
+                print("<br>Deleted", i)
+    for n, i in enumerate(p_ind):
+          print("<br>", wt.put_form("checkbox", 'fil', fn_ind[n]), i)
+    print("<p>", wt.put_form("submit", "sub", "Submit"), "</form>")
+#        print(filz)
+        
 def catlist():
     dirs = []
     for root, di, fi in os.walk(sett['dir']):

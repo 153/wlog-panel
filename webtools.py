@@ -15,6 +15,9 @@ def head(title=''):
 
 def get_form(val):
     if form.getvalue(val):
+        if len(form.getvalue(val)[0]) > 1:
+            print('\n'.join(form.getlist(val)))
+            return cgi.escape('\n'.join(form.getlist(val))).strip()
         return cgi.escape(form.getvalue(val)).strip()
     else:
         return ''
