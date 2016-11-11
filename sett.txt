@@ -1,5 +1,19 @@
+# relative location for script URL
 url ./admin.py3?
+
+# stored as plaintext cookie
 pw test
+
+# How to tell wlog that about the date
 dpre date: 
+
+readmore <...> 
 ext .md
+
+# Location of wlog's pagedir, relative to the admin script
 dir ../pages/
+
+# Overrides webtools.py default timestring
+# (strftime formatting, default is ISO8601 influenced)
+t_f %Y.%m.%d [%a] %H:%M
+

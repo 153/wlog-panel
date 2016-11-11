@@ -1,22 +1,20 @@
 <table>
 <tr>
- <td>Title:
+ <th>Title:
  <td><input type='text' name='title'
  	    value='{0}' required>
  <td><input type='submit' name='prev' value='Preview'>
 
 <tr>
- <td>Date:
+ <th>Date:
  <td><input type='text' name='date' value='{1}'>
  <td>&emsp;&emsp;<input type='submit' name='sub' value='Submit'>
 <tr>
- <td>fn:
+ <th>fn:
  <td colspan="2">{4}
      <input type='text' name='fn' value='{2}' required>
 </table>
-<h3>Preview:</h3>
+<h3>Preview:<a name='edit'></a></h3>
 {5}
-<a name='edit'>
-<p>
-<textarea name='content' required>{3}</textarea>
-
+<hr><textarea name='content' required>{3}</textarea>
+<p><input type='submit' name='prev' value='Preview'>

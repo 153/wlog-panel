@@ -7,14 +7,13 @@ import mistune
 markdown = mistune.Markdown()
 cgitb.enable()
 
-
 def sett():
     settt = {}
     with open("sett.txt", 'r') as sett:
         sett = sett.read().splitlines()
     for i in sett:
         i = i.split(" ")
-        if len(i) < 2:
+        if len(i) < 2 or i[0] in ["", " ", "#"]:
             continue
         if len(i) > 2:
             i[1] = " ".join(i[1:])
@@ -22,26 +21,32 @@ def sett():
     return settt
 
 sett = sett()
+if sett['t_f']:
+    wt.time_form = sett['t_f']
         
 def panel():
+    if wt.get_form('m'):
+        print("<small><a href='{0}'>".format(sett['url']))
+        print("&lt;&lt; back</a></small><p>")
+    else:
+        print("<h1>Admin Panel</h1>")
     modes = {'p_add':'addpost()', 'p_edit':'editpost()', 'p_del':'delpost()',
              'p_move':'movepost()', 'c_add':'categoryadd()',
              'c_del':'categorydel()', 'settings':'settings()',
              'logout':'logout()'}
-    print("<div>")
-    print(sorted([modes[i] for i in modes.keys()]))
-    print("<p>")
+    print("<div class='panel'>")
+#    print(sorted([modes[i] for i in modes.keys()]))
     if not wt.get_form('m') in modes.keys():
         with open("main.html", 'r') as mainpanel:
             mainpanel = mainpanel.read().splitlines()
-        mainpanel = "<br>".join(mainpanel)
+        mainpanel = "\n<br>".join(mainpanel)
         print(mainpanel.format(sett['url']))
     else:
-        print("<h1>",wt.get_form('m'),"</h1>")
-        print("<small><a href='{0}'>".format(sett['url']))
-        print("&lt;&lt; back</a></small><p>")
+#        print("<h1>",wt.get_form('m'),"</h1>")
         eval(modes[wt.get_form('m')])
-    print("</div>")
+    print("</div><p>")
+    print("<small><a href='{0}'>".format(sett['url']))
+    print("&lt;&lt; back</a></small><p>")
 
 def indexposts():
     postindex = []
@@ -55,6 +60,18 @@ def indexposts():
 def logged_in(password=''):
     if not password:
         if not wt.get_form("pw"):
+            print("<h1>Login</h1>")
+            print("""<style>
+input {
+height: 2.5em;
+font-size: 150%;
+}
+
+input[password] {
+width: 12em;
+}
+</style><p><center>
+""")
             print(wt.new_form(sett['url'], 'post'),
                   wt.put_form('password', 'pw', ''),
                   wt.put_form('submit', '', "Login"),
@@ -68,6 +85,7 @@ def logged_in(password=''):
         return 1
 
 def logout():
+    print("<h1>Logout</h1>")
     print("You have been logged out successfully.<p>")
     print("<a href='{0}'>&lt;&lt; Back</a>".format(sett['url']))
     print(wt.put_cookie('pw', ''))
@@ -107,6 +125,7 @@ def getpost(p_fn=''):
     return pps
     
 def addpost():
+    print("<h1>Add Post</h1>")
     print(wt.new_form(sett['url'] + "#edit", 'post'))
     print(wt.put_form('hidden', 'm', 'p_add'))
     ind = [i[len(sett['dir']):-len(sett['ext'])] for i in indexposts()]
@@ -153,6 +172,7 @@ def addpost():
 # need to refactor
 
 def editpost(p_fn=''):
+    print("<h1>Edit post</h1>")
     postindex = indexposts()
     pps = [wt.get_form('fn'), 
            wt.get_form('title'),
@@ -163,7 +183,7 @@ def editpost(p_fn=''):
     if pps[0]:
         if wt.get_form('prev'):
             print("Previewing")
-        print(wt.get_form("fn"))
+        print("<code>", wt.get_form("fn"), "</code>")
         fn = wt.get_form("fn")
         print("<p>")
         with open(fn, 'r') as entry:
@@ -183,7 +203,7 @@ def editpost(p_fn=''):
             return None
         pps[0], pps[2] = pps[2], pps[0]
         pps.append('')
-        pps.append(markdown(pps[3]))
+        pps.append(markdown(pps[3].replace(sett['readmore'], "<hr>")))
         with open("post.html", "r") as pos:
             pos = pos.read().replace("fn'", "fn' readonly ")
         print(pos.format(*pps))
@@ -195,6 +215,7 @@ def editpost(p_fn=''):
     print("</form>")
 
 def delpost():
+    print("<h1>Delete posts</h1>")
     fn_ind = indexposts()
     p_ind = [i[len(sett['dir']):-len(sett['ext'])] for i in fn_ind]
     print(wt.new_form(sett['url'], 'post'),
@@ -207,7 +228,7 @@ def delpost():
             else:
                 os.remove(i)
                 print("<br>Deleted", i)
-                
+    p_ind = [i[len(sett['dir']):-len(sett['ext'])] for i in indexposts()]
     for n, i in enumerate(p_ind):
           print("<br>", wt.put_form("checkbox", 'fil', fn_ind[n]), i)
     print("<p>", wt.put_form("submit", "sub", "Delete"), "</form>")
@@ -220,14 +241,15 @@ def catlist():
     return sorted(dirs[0])
 
 def categoryadd():
+    print("<h1>Add Category</h1>")
     if wt.get_form('add') or wt.get_form('add1'):
         ndir = wt.get_form('dir')[:12]
         ndir = re.sub(r'[^\w\s]', '', ndir)
         ndir = re.sub(r"\s+", "_", ndir)
-        print(sett['dir'] + ndir + "/")
         if ndir in catlist():
             print("It exists already.<p>")
         elif not wt.get_form('add1'):
+            print(sett['dir'] + ndir + "/")
             print("<p><i>Confirm?</i>",
                   wt.new_form(sett['url'], 'post'),
                   wt.put_form('hidden', 'm', 'c_add'),
@@ -254,6 +276,46 @@ def categoryadd():
           wt.put_form('submit', 'add', 'Add'),
           "</form>")
 
+def categorydel():
+    print("<h1>Delete Category</h1>")
+    if wt.get_form('del') or wt.get_form('del1'):
+        ddir = wt.get_form('dir').replace("\r", "").split("\n")
+        for n, i in enumerate(ddir):
+            ddir[n] = re.sub(r'[^\w\s]', '', i)
+            ddir[n] = re.sub(r"\s+", "_", i)
+            print(sett['dir'] + i + "/")
+        if not wt.get_form('del1'):
+            print("<p><i>Confirm?</i>",
+                  wt.new_form(sett['url'], 'post'),
+                  wt.put_form('hidden', 'm', 'c_del'),
+                  wt.put_form('hidden', 'dir', '\n'.join(ddir)),
+                  wt.put_form('submit', 'del1', "Delete"),
+                  "</form>")
+        else:
+            for i in ddir:
+                if not i in catlist():
+                    continue
+                i = sett['dir'] + i
+                if len(os.listdir(i)) == 0:
+                    os.rmdir(i)
+                    print("<br>Deleted", i)
+                else:
+                    print("<p>Please move or remove files from the directory"
+                          "before attempting to delete the category.")
+            print("<p>")
+    print("Current categories:<br>")
+    print(wt.new_form(sett['url'], 'post'))
+    print(wt.put_form('hidden', 'm', 'c_del'))
+    clist = catlist()
+    for n, i in enumerate(clist):
+        clist[n] = "<br>" + wt.put_form("checkbox", 'dir', i) \
+                   + " /" + i \
+                   + "/ (" + str(len(os.listdir(sett['dir'] + i))) + ")"
+    print("\n".join(clist))
+    print("<p>", wt.put_form('submit', 'del', 'Delete'))
+    print("</form>")
+    
+    
 def settings():
     if wt.get_form('sub'):
         change = 0
