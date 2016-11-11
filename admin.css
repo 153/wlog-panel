@@ -1,3 +1,14 @@
+h1 {
+    text-align: center;
+}
+body {
+    background-color: #9b9;
+}
+
+body a {
+    color: #f00;
+}
+
 textarea {
   padding: 0.5em;
   min-width: 400px;

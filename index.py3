@@ -1,6 +1,6 @@
 #/usr/bin/env python3
 import os, time, cgi, cgitb
-import re, string
+import re, string, shutil
 import webtools as wt
 import mistune
 
@@ -32,17 +32,18 @@ def panel():
     else:
         print("<div class='panel'>")
         print("<h1>Admin Panel</h1>")
-    modes = {'p_add':'addpost()', 'p_edit':'editpost()', 'p_del':'delpost()',
-             'p_move':'movepost()', 'c_add':'categoryadd()',
-             'c_del':'categorydel()', 'settings':'settings()',
-             'logout':'logout()'}
-
+    modes = {'p_add':'addpost()', 'p_edit':'editpost()',
+             'p_del':'delpost()', 'p_move':'movepost()',
+             'c_add':'categoryadd()', 'c_del':'categorydel()',
+             'settings':'settings()', 'logout':'logout()'}
+#    print(sorted([modes[i] for i in modes.keys()]))
     if not wt.get_form('m') in modes.keys():
         with open("main.html", 'r') as mainpanel:
             mainpanel = mainpanel.read().splitlines()
         mainpanel = "\n<br>".join(mainpanel)
         print(mainpanel.format(sett['url']))
     else:
+#        print("<h1>",wt.get_form('m'),"</h1>")
         eval(modes[wt.get_form('m')])
     print("</div><p>")
     print("<small><a href='{0}'>".format(sett['url']))
@@ -54,7 +55,8 @@ def indexposts():
     for x in files:
         for y in x[2]:
             if y[-len(sett['ext']):] == sett['ext']:
-                postindex.append(x[0] + "/" + y)
+                z = str(x[0] + "/" + y).replace("//", "/")
+                postindex.append(z)
     return postindex
     
 def logged_in(password=''):
@@ -213,7 +215,7 @@ def editpost(p_fn=''):
         print(wt.dropdown('fn', postindex, postnames))
         print(wt.put_form('submit', '', 'go'))
     print("</form>")
-
+    
 def delpost():
     print("<h1>Delete posts</h1>")
     fn_ind = indexposts()
@@ -239,6 +241,68 @@ def catlist():
         if len(di) > 0:
             dirs.append(di)
     return sorted(dirs[0])
+
+def movepost():
+    print("<h1>Move posts</h1>")
+    subd1 = wt.get_form('subd1')
+    subd2 = wt.get_form('subd2')
+    subds = [subd1, subd2]
+    subdfs = [[],[]]
+    for n, i in enumerate(subds):
+        if i == '':
+            bar = len(sett['dir'].split('/'))
+            print("<p>(None)<br>")
+            subdfs[n] = [i for i in indexposts() if len(i.split('/')) == bar]
+        else:
+            if i in catlist():
+                print("<p><i>", i + ":", "</i><br>")
+                subdfs[n] = [j for j in indexposts() if i in j]
+        print("<br>".join(subdfs[n]))
+    if wt.get_form('conf') and wt.get_form('subd1_'):
+#        print("<p>", [i for i in subdfs[0]])
+        #        print("<br>", sett['dir'] + subds[1])
+        for i in subdfs[0]:
+            if i not in os.listdir(sett['dir'] + subds[1]):
+                shutil.move(i, sett['dir'] + subds[1])
+            else:
+                print("<br>", i, "exists in", subds[1], "<br>")
+        print("<p>Finished moving")
+        return
+    print("<p>", subds, wt.get_form('subd1_'), wt.get_form('conf'))
+                        
+    print(wt.new_form('.', 'post'),
+          wt.put_form('hidden', 'm', 'p_move'))
+    print("<table>")
+    print("<tr><th>From dir",
+          "<th>--&gt;",
+          "<th>To dir")
+    s = subdir_list().replace('subd', 'subd1')
+    if subds[0]:
+        s = s.replace("'" + subds[0] + "'", \
+                      "'" + subds[0] + "' selected")
+        
+    box = wt.put_form("checkbox", "subd1_", 1)
+    if wt.get_form("subd1_"):
+        box = box.replace(">", " checked>")
+    print("<tr><td>", s, "All?", box, "<td><td>")
+    s = subdir_list().replace('subd', 'subd2')
+    if subds[1]:
+        s = s.replace("'" + subds[1] + "'",
+                      "'" + subds[1] + "' selected")
+    print(s, "<tr><td colspan='3'>")
+    if len(subds) != 2 or subds[0] == subds[1]:
+        print(wt.put_form("submit", "sub", "Submit"))
+        print("\n<br>".join([
+            "<p>Move all of the posts in 1 category into the other.",
+            "If a post with the same filename exists in both",
+            "directories, the post with the matching filename will",
+            "remain in its source directory."]))
+    else:
+        print("Really move posts from `<i>" + subds[0] \
+              + "</i>` to `<i>" + subds[1] + "</i>`?<p>")
+        print(wt.put_form("submit", 'sub', 'Alter'),
+              "&emsp;", wt.put_form("submit", 'conf', "Move"))
+    print("</table></form>")
 
 def categoryadd():
     print("<h1>Add Category</h1>")
@@ -300,8 +364,8 @@ def categorydel():
                     os.rmdir(i)
                     print("<br>Deleted", i)
                 else:
-                    print("<p>Please move or remove files from the directory"
-                          "before attempting to delete the category.")
+                    print("<p><i>Please move or remove files from the directory"
+                          "<br>before attempting to delete the category.</i>")
             print("<p>")
     print("Current categories:<br>")
     print(wt.new_form(sett['url'], 'post'))
