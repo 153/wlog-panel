@@ -1,4 +1,4 @@
-#/usr/bin/env python3
+#!/usr/bin/env python3
 import os, time, cgi, cgitb
 import re, string, shutil
 import webtools as wt
