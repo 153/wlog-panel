@@ -57,23 +57,14 @@ def indexposts():
             if y[-len(sett['ext']):] == sett['ext']:
                 z = str(x[0] + "/" + y).replace("//", "/")
                 postindex.append(z)
-    return postindex
+    return sorted(postindex)
     
 def logged_in(password=''):
+    # confirm login / Get n set the password 
     if not password:
         if not wt.get_form("pw"):
-            print("<h1>Login</h1>")
-            print("""<style>
-input {
-height: 2.5em;
-font-size: 150%;
-}
-
-input[password] {
-width: 12em;
-}
-</style><p><center>
-""")
+            print("""<style>input {height: 2.5em;font-size: 150%;}
+input[password] {width: 12em;}</style><p><center>""")
             print(wt.new_form(sett['url'], 'post'),
                   wt.put_form('password', 'pw', ''),
                   wt.put_form('submit', '', "Login"),
@@ -92,6 +83,13 @@ def logout():
     print("<a href='{0}'>&lt;&lt; Back</a>".format(sett['url']))
     print(wt.put_cookie('pw', ''))
 
+def catlist():
+    dirs = []
+    for root, di, fi in os.walk(sett['dir']):
+        if len(di) > 0:
+            dirs.append(di)
+    return sorted(dirs[0])
+    
 def subdir_list():
     subdirs = catlist()
     menu = wt.dropdown('subd', subdirs).splitlines()
@@ -147,7 +145,7 @@ def addpost():
         post = post.read()
     if wt.get_form('fn'):
         mp = getpost(wt.get_form('fn'))
-        mp[2].replace("&gt;", ">").replace("&lt;", "<")
+        mp[2] = mp[2].replace("&gt;", ">").replace("&lt;", "<")
         mp[0], mp[2] = mp[2], mp[0]
         mp.append(subdir_list())
         mp.append(markdown(mp[3]))
@@ -175,7 +173,7 @@ def addpost():
 
 def editpost(p_fn=''):
     print("<h1>Edit post</h1>")
-    postindex = indexposts()
+    postindex = sorted(indexposts())
     pps = [wt.get_form('fn'), 
            wt.get_form('title'),
            wt.get_form('date'),
@@ -234,13 +232,6 @@ def delpost():
     for n, i in enumerate(p_ind):
           print("<br>", wt.put_form("checkbox", 'fil', fn_ind[n]), i)
     print("<p>", wt.put_form("submit", "sub", "Delete"), "</form>")
-        
-def catlist():
-    dirs = []
-    for root, di, fi in os.walk(sett['dir']):
-        if len(di) > 0:
-            dirs.append(di)
-    return sorted(dirs[0])
 
 def movepost():
     print("<h1>Move posts</h1>")
@@ -274,7 +265,6 @@ def movepost():
     if subds[0]:
         s = s.replace("'" + subds[0] + "'", \
                       "'" + subds[0] + "' selected")
-        
     box = wt.put_form("checkbox", "subd1_", 1)
     if wt.get_form("subd1_"):
         box = box.replace(">", " checked>")
@@ -418,14 +408,10 @@ def main():
         css = sett['css']
     else:
         css = "admin.css"
+        
     print(wt.head("admin panel"),
           "<link rel='stylesheet' type='text/css' href='{0}'>".format(css),
-          """<script src="//cdn.jsdelivr.net/medium-editor/latest/js/medium-editor.min.js"></script>
-<link rel="stylesheet" href="//cdn.jsdelivr.net/medium-editor/latest/css/medium-editor.min.css" type="text/css" media="screen" charset="utf-8">
-<link rel="stylesheet" 
-      href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
-<script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js">
-          </script><body>""")
+          "<body>")
     if 'pw' in cookies.keys():
         pw = cookies['pw']
     if pw == sett['pw']:
@@ -434,7 +420,5 @@ def main():
     elif logged_in(wt.get_form("pw")):
         print(wt.put_cookie('pw', wt.get_form("pw")))
         panel()
-    if wt.get_form("m"):
-        print(wt.get_form("m"))
 
 main()
