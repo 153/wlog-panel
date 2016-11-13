@@ -251,25 +251,19 @@ def movepost():
     for n, i in enumerate(subds):
         if i == '':
             bar = len(sett['dir'].split('/'))
-            print("<p>(None)<br>")
             subdfs[n] = [i for i in indexposts() if len(i.split('/')) == bar]
-        else:
-            if i in catlist():
-                print("<p><i>", i + ":", "</i><br>")
-                subdfs[n] = [j for j in indexposts() if i in j]
-        print("<br>".join(subdfs[n]))
-    if wt.get_form('conf') and wt.get_form('subd1_'):
-#        print("<p>", [i for i in subdfs[0]])
-        #        print("<br>", sett['dir'] + subds[1])
-        for i in subdfs[0]:
-            if i not in os.listdir(sett['dir'] + subds[1]):
+        elif i in catlist():
+            subdfs[n] = [j for j in indexposts() if i + "/" in j]
+    if wt.get_form('conf'):
+        if wt.get_form('subd1_'):
+            moves = subdfs[0]
+        elif wt.get_form('fn'):
+            moves = wt.get_form('fn').split('\n')
+        for i in moves:
                 shutil.move(i, sett['dir'] + subds[1])
-            else:
-                print("<br>", i, "exists in", subds[1], "<br>")
         print("<p>Finished moving")
         return
-    print("<p>", subds, wt.get_form('subd1_'), wt.get_form('conf'))
-                        
+
     print(wt.new_form('.', 'post'),
           wt.put_form('hidden', 'm', 'p_move'))
     print("<table>")
@@ -291,7 +285,7 @@ def movepost():
                       "'" + subds[1] + "' selected")
     print(s, "<tr><td colspan='3'>")
     if len(subds) != 2 or subds[0] == subds[1]:
-        print(wt.put_form("submit", "sub", "Submit"))
+        print(wt.put_form("submit", "sub", "Load"))
         print("\n<br>".join([
             "<p>Move all of the posts in 1 category into the other.",
             "If a post with the same filename exists in both",
@@ -300,8 +294,14 @@ def movepost():
     else:
         print("Really move posts from `<i>" + subds[0] \
               + "</i>` to `<i>" + subds[1] + "</i>`?<p>")
-        print(wt.put_form("submit", 'sub', 'Alter'),
-              "&emsp;", wt.put_form("submit", 'conf', "Move"))
+        print("<center>", wt.put_form("submit", 'sub', 'Check'),
+              "&emsp;", wt.put_form("submit", 'conf', "Move"),
+              "</center>")
+        for i in subdfs[0]:
+            x = "<br>" + wt.put_form('checkbox', 'fn', i) +  i
+            if i in wt.get_form('fn').split('\n'):
+                x = x.replace("'>", "' checked>")
+            print(x)
     print("</table></form>")
 
 def categoryadd():
@@ -420,7 +420,12 @@ def main():
         css = "admin.css"
     print(wt.head("admin panel"),
           "<link rel='stylesheet' type='text/css' href='{0}'>".format(css),
-          "<body>")
+          """<script src="//cdn.jsdelivr.net/medium-editor/latest/js/medium-editor.min.js"></script>
+<link rel="stylesheet" href="//cdn.jsdelivr.net/medium-editor/latest/css/medium-editor.min.css" type="text/css" media="screen" charset="utf-8">
+<link rel="stylesheet" 
+      href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
+<script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js">
+          </script><body>""")
     if 'pw' in cookies.keys():
         pw = cookies['pw']
     if pw == sett['pw']:
@@ -429,7 +434,6 @@ def main():
     elif logged_in(wt.get_form("pw")):
         print(wt.put_cookie('pw', wt.get_form("pw")))
         panel()
-        
     if wt.get_form("m"):
         print(wt.get_form("m"))
 

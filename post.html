@@ -12,9 +12,12 @@
 <tr>
  <th>fn:
  <td colspan="2">{4}
-     <input type='text' name='fn' value='{2}' required>
+     <input type='text' name='fn' id="inp" value='{2}' required>
 </table>
 <h3>Preview:<a name='edit'></a></h3>
 {5}
-<hr><textarea name='content' required>{3}</textarea>
+
+
+<hr>
+<textarea name='content' class="editable" required>{3}</textarea>
 <p><input type='submit' name='prev' value='Preview'>
