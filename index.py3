@@ -145,7 +145,7 @@ def addpost():
         post = post.read()
     if wt.get_form('fn'):
         mp = getpost(wt.get_form('fn'))
-        mp[2] = mp[2].replace("&gt;", ">").replace("&lt;", "<")
+        mp[3] = mp[3].replace("&gt;", ">").replace("&lt;", "<")
         mp[0], mp[2] = mp[2], mp[0]
         mp.append(subdir_list())
         mp.append(markdown(mp[3]))
